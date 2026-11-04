@@ -7,16 +7,16 @@ export interface Io {
   stdout: (text: string) => void
 }
 
-const help = `Usage: agentic-github [options]
+const help = `Usage: agentic-repo [options]
 
-Run software work through GitHub issues and pull requests, with any coding agent.
+Automate the issue and pull request lifecycle with any coding agent, locally or in CI.
 
 Options:
   -h, --help     Show this help
   -v, --version  Show the version
 `
 
-const hint = 'Run "agentic-github --help" for the usage.\n'
+const hint = 'Run "agentic-repo --help" for the usage.\n'
 
 const parse = (argv: string[]) =>
   parseArgs({

@@ -1,5 +1,5 @@
 {
-  "include": ["src", "tsdown.config.ts"],
+  "include": ["src", "scripts", "*.config.ts"],
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,

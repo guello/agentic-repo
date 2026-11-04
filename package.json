@@ -1,7 +1,7 @@
 {
-  "name": "agentic-github",
+  "name": "agentic-repo",
   "version": "0.0.0",
-  "description": "Run software work through GitHub issues and pull requests, with any coding agent, local or in CI.",
+  "description": "Automate the issue and pull request lifecycle with any coding agent, locally or in CI.",
   "keywords": [
     "agents",
     "github",
@@ -10,38 +10,34 @@
     "issues",
     "pull-requests"
   ],
-  "homepage": "https://github.com/guello/agentic-github#readme",
+  "homepage": "https://github.com/guello/agentic-repo#readme",
   "bugs": {
-    "url": "https://github.com/guello/agentic-github/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/guello/agentic-github.git"
+    "url": "https://github.com/guello/agentic-repo/issues"
   },
   "license": "MIT",
   "author": "Gabriele Canepa",
-  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guello/agentic-repo.git"
+  },
   "bin": {
-    "agentic-github": "dist/agentic-github.mjs"
+    "agentic-repo": "dist/agentic-repo.mjs"
   },
   "files": [
     "dist",
-    "schema",
-    "defaults",
+    "schema.json",
     "templates"
   ],
-  "engines": {
-    "node": ">=22"
-  },
-  "packageManager": "pnpm@11.20.0",
+  "type": "module",
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && node scripts/generate-schema.ts",
     "check": "pnpm run --parallel \"/^check:/\"",
     "check:format": "oxfmt --check",
     "check:lint": "oxlint",
     "check:types": "tsc --noEmit",
     "ci": "pnpm run check && pnpm run test && pnpm run build",
     "fix": "oxlint --fix && oxfmt",
+    "prepack": "pnpm run build",
     "test": "node --test \"src/**/*.test.ts\""
   },
   "devDependencies": {
@@ -50,6 +46,12 @@
     "oxlint": "^1.90.0",
     "oxlint-tsgolint": "^7.0.2005",
     "tsdown": "0.23.4",
-    "typescript": "^7.0.2"
-  }
+    "typescript": "^7.0.2",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@12.16.1"
 }

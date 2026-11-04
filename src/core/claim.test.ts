@@ -14,7 +14,10 @@ describe('resolveClaim', () => {
 
   it('yields each newer branch to the oldest one', () => {
     const branches = ['fix/42-a', 'agent/fix/42-a', 'feat/42-a']
-    assert.deepEqual(resolveClaim(branches, 'agent/fix/42-a'), { action: 'yield', holder: 'fix/42-a' })
+    assert.deepEqual(resolveClaim(branches, 'agent/fix/42-a'), {
+      action: 'yield',
+      holder: 'fix/42-a',
+    })
     assert.deepEqual(resolveClaim(branches, 'feat/42-a'), { action: 'yield', holder: 'fix/42-a' })
   })
 

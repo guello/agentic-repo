@@ -1,9 +1,10 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["dist", "schema.json"],
   "arrowParens": "avoid",
-  "ignorePatterns": ["dist"],
   "semi": false,
   "singleQuote": true,
+  "trailingComma": "es5",
   "sortImports": {
     "groups": [
       ["side_effect", "side_effect_style", "style"],
@@ -11,10 +12,6 @@
       "external",
       ["index", "sibling", "parent"],
       "unknown"
-    ],
-    "newlinesBetween": true,
-    "sortSideEffects": false
-  },
-  "sortPackageJson": false,
-  "trailingComma": "es5"
+    ]
+  }
 }

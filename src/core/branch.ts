@@ -25,7 +25,17 @@ export const commitTypeFor = (issueType: string | undefined): CommitType | undef
 
 export const maxSlugLength = 40
 
-const letters: Record<string, string> = { æ: 'ae', ð: 'd', đ: 'd', ı: 'i', ł: 'l', ø: 'o', œ: 'oe', ß: 'ss', þ: 'th' }
+const letters: Record<string, string> = {
+  æ: 'ae',
+  ð: 'd',
+  đ: 'd',
+  ı: 'i',
+  ł: 'l',
+  ø: 'o',
+  œ: 'oe',
+  ß: 'ss',
+  þ: 'th',
+}
 
 export const slug = (title: string): string => {
   const full = title

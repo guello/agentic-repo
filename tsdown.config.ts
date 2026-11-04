@@ -1,5 +1,7 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: { 'agentic-github': 'src/cli.ts' },
+  entry: {
+    'agentic-repo': 'src/cli.ts',
+  },
 })

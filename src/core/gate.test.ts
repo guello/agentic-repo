@@ -34,11 +34,27 @@ describe('startGate', () => {
 
   const cases: [string, Partial<IssueSnapshot>, StartBlock][] = [
     ['a closed issue', { open: false }, { code: 'closed' }],
-    ['a needs-* label', { labels: ['agent', 'needs-info'] }, { code: 'label', labels: ['needs-info'] }],
+    [
+      'a needs-* label',
+      { labels: ['agent', 'needs-info'] },
+      { code: 'label', labels: ['needs-info'] },
+    ],
     ['agent-failed', { labels: ['agent-failed'] }, { code: 'label', labels: ['agent-failed'] }],
-    ['an open blocker', { blockedBy: [{ number: 5, open: true }] }, { code: 'blocked', issues: [5] }],
-    ['open sub-issues', { subIssues: [{ number: 44, open: true }] }, { code: 'container', issues: [44] }],
-    ['a linked branch', { linkedBranches: ['fix/42-a'] }, { branches: ['fix/42-a'], code: 'branch' }],
+    [
+      'an open blocker',
+      { blockedBy: [{ number: 5, open: true }] },
+      { code: 'blocked', issues: [5] },
+    ],
+    [
+      'open sub-issues',
+      { subIssues: [{ number: 44, open: true }] },
+      { code: 'container', issues: [44] },
+    ],
+    [
+      'a linked branch',
+      { linkedBranches: ['fix/42-a'] },
+      { branches: ['fix/42-a'], code: 'branch' },
+    ],
     [
       'an open closing PR',
       { closingPullRequests: [{ number: 31, open: true }] },
@@ -86,7 +102,9 @@ describe('dispatchLabels', () => {
   })
 
   it('adds only needs-triage when an XL issue also misses a field', () => {
-    assert.deepEqual(dispatchLabels([{ code: 'fields', missing: ['priority'] }, { code: 'xl' }]), ['needs-triage'])
+    assert.deepEqual(dispatchLabels([{ code: 'fields', missing: ['priority'] }, { code: 'xl' }]), [
+      'needs-triage',
+    ])
   })
 
   it('adds no label to a container, so that the dispatcher can fan out', () => {
@@ -134,7 +152,10 @@ describe('mergeGate', () => {
     ],
     [
       'an open blocker of a closed issue',
-      { ...mergeable, closes: [{ blockedBy: [{ number: 5, open: true }], labels: [], number: 12 }] },
+      {
+        ...mergeable,
+        closes: [{ blockedBy: [{ number: 5, open: true }], labels: [], number: 12 }],
+      },
       [{ blockers: [5], code: 'issue-blocked', issue: 12 }],
     ],
   ]
@@ -159,7 +180,12 @@ describe('mergeGate', () => {
   })
 
   it('has a description for each reason', () => {
-    for (const block of cases.flatMap(testCase => testCase[2])) assert.match(describeMergeBlock(block), /^\S.*\.$/)
-    assert.equal(describeMergeBlock({ blockers: [5], code: 'issue-blocked', issue: 12 }), '#12 has open blockers: #5.')
+    for (const block of cases.flatMap(testCase => testCase[2])) {
+      assert.match(describeMergeBlock(block), /^\S.*\.$/)
+    }
+    assert.equal(
+      describeMergeBlock({ blockers: [5], code: 'issue-blocked', issue: 12 }),
+      '#12 has open blockers: #5.'
+    )
   })
 })

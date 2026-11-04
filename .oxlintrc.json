@@ -1,5 +1,16 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": ["dist"],
+  "env": {
+    "es2022": true,
+    "node": true
+  },
+  "options": {
+    "denyWarnings": true,
+    "reportUnusedDisableDirectives": "error",
+    "typeAware": true,
+    "typeCheck": false
+  },
   "categories": {
     "correctness": "error",
     "nursery": "allow",
@@ -8,17 +19,6 @@
     "restriction": "allow",
     "style": "error",
     "suspicious": "error"
-  },
-  "env": {
-    "es2022": true,
-    "node": true
-  },
-  "ignorePatterns": ["dist"],
-  "options": {
-    "denyWarnings": true,
-    "reportUnusedDisableDirectives": "error",
-    "typeAware": true,
-    "typeCheck": false
   },
   "plugins": ["eslint", "import", "node", "oxc", "promise", "typescript", "unicorn"],
   "rules": {

@@ -1,32 +1,18 @@
+import {
+  type Cell,
+  type Config,
+  type Engine,
+  type FixedRole,
+  type ModelEffort,
+  type Routing,
+  type Tier,
+} from './config.ts'
 import { type Effort, type Priority } from './fields.ts'
 import { labels } from './labels.ts'
 
-export type Engine = 'claude' | 'codex' | 'gemini'
-export type Tier = 'deep' | 'fast' | 'standard'
-export type Cell = Tier | 'split'
-export type ModelEffort = 'high' | 'low' | 'medium'
-export type Role = 'architect' | 'implementer' | 'reviewer' | 'triage'
+export type Role = FixedRole | 'implementer'
 
-export interface ModelChoice {
-  effort: ModelEffort
-  model: string
-}
-
-export interface Engines {
-  default: Engine
-  reviewer?: Engine
-}
-
-export interface Routing {
-  matrix: Record<Effort, Record<Priority, Cell>>
-  models: Record<Engine, Record<Tier, ModelChoice>>
-  roles: Record<Exclude<Role, 'implementer'>, Tier>
-}
-
-export interface RouteConfig {
-  engines: Engines
-  routing: Routing
-}
+export type RouteConfig = Pick<Config, 'engines' | 'routing'>
 
 export interface RouteInput {
   effort?: Effort
@@ -50,5 +36,12 @@ export const route = (input: RouteInput, { engines, routing }: RouteConfig): Rou
   if (cell === 'split') return { label: labels.needsSpec, run: false }
   const engine = input.role === 'reviewer' ? (engines.reviewer ?? engines.default) : engines.default
   const { effort, model } = routing.models[engine][cell]
-  return { effort, engine, model, review: input.role === 'implementer' && cell === 'deep', run: true, tier: cell }
+  return {
+    effort,
+    engine,
+    model,
+    review: input.role === 'implementer' && cell === 'deep',
+    run: true,
+    tier: cell,
+  }
 }

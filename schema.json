@@ -1,0 +1,303 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "backend": {
+      "type": "string",
+      "enum": [
+        "org",
+        "user"
+      ],
+      "description": "org uses issue types and issue fields. user uses project fields on a personal account."
+    },
+    "engines": {
+      "type": "object",
+      "properties": {
+        "default": {
+          "type": "string",
+          "enum": [
+            "claude",
+            "codex",
+            "gemini"
+          ],
+          "description": "The engine of each role."
+        },
+        "reviewer": {
+          "type": "string",
+          "enum": [
+            "claude",
+            "codex",
+            "gemini"
+          ],
+          "description": "The engine of the reviewer, when it is not the default engine."
+        }
+      },
+      "additionalProperties": false
+    },
+    "fields": {
+      "type": "object",
+      "properties": {
+        "effort": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The name of the field on GitHub. An issue type needs no name."
+            },
+            "options": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "enum": [
+                  "XS",
+                  "S",
+                  "M",
+                  "L",
+                  "XL"
+                ]
+              },
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "The GitHub option name of each value, when it is not the same."
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "issue",
+                "project"
+              ],
+              "description": "Where the value is. The default is issue for the org backend and project for the user backend."
+            }
+          },
+          "additionalProperties": false
+        },
+        "priority": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The name of the field on GitHub. An issue type needs no name."
+            },
+            "options": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "enum": [
+                  "P0",
+                  "P1",
+                  "P2",
+                  "P3"
+                ]
+              },
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "The GitHub option name of each value, when it is not the same."
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "issue",
+                "project"
+              ],
+              "description": "Where the value is. The default is issue for the org backend and project for the user backend."
+            }
+          },
+          "additionalProperties": false
+        },
+        "type": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The name of the field on GitHub. An issue type needs no name."
+            },
+            "options": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "enum": [
+                  "Bug",
+                  "Epic",
+                  "Feature",
+                  "Spec",
+                  "Task"
+                ]
+              },
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "The GitHub option name of each value, when it is not the same."
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "issue",
+                "project"
+              ],
+              "description": "Where the value is. The default is issue for the org backend and project for the user backend."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "description": "The project that holds the Status field."
+    },
+    "reconcile": {
+      "type": "object",
+      "properties": {
+        "remindAfterDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "description": "Days between two reminders on an issue that waits on the user."
+        }
+      },
+      "additionalProperties": false
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "maxRounds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "description": "Review rounds before the reviewer asks the user."
+        }
+      },
+      "additionalProperties": false
+    },
+    "routing": {
+      "type": "object",
+      "properties": {
+        "matrix": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "enum": [
+              "XS",
+              "S",
+              "M",
+              "L",
+              "XL"
+            ]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "enum": [
+                "P0",
+                "P1",
+                "P2",
+                "P3"
+              ]
+            },
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "deep",
+                "fast",
+                "standard",
+                "split"
+              ]
+            }
+          },
+          "description": "The tier of each Effort and Priority. split sends the issue to the architect."
+        },
+        "models": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "enum": [
+              "claude",
+              "codex",
+              "gemini"
+            ]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "enum": [
+                "deep",
+                "fast",
+                "standard"
+              ]
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "effort": {
+                  "type": "string",
+                  "enum": [
+                    "high",
+                    "low",
+                    "medium"
+                  ]
+                },
+                "model": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "description": "The model and the effort of each engine and tier."
+        },
+        "roles": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "enum": [
+              "architect",
+              "reviewer",
+              "triage"
+            ]
+          },
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "deep",
+              "fast",
+              "standard"
+            ]
+          },
+          "description": "The tier of each role that does not use the matrix."
+        }
+      },
+      "additionalProperties": false
+    },
+    "root": {
+      "description": "In a repo file, true skips the owner file.",
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The config of agentic-repo: package defaults, then the owner file, then the repo file.",
+  "title": "agentic-repo config"
+}

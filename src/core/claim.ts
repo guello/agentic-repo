@@ -1,4 +1,7 @@
-export type ClaimDecision = { action: 'keep' } | { action: 'missing' } | { action: 'yield'; holder: string }
+export type ClaimDecision =
+  | { action: 'keep' }
+  | { action: 'missing' }
+  | { action: 'yield'; holder: string }
 
 export const resolveClaim = (linkedBranches: string[], mine: string): ClaimDecision => {
   if (!linkedBranches.includes(mine)) return { action: 'missing' }

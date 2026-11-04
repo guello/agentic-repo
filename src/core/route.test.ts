@@ -1,41 +1,26 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
-import { efforts, priorities } from './fields.ts'
-import { type Cell, type RouteConfig, route } from './route.ts'
+import { type Cell, type Layer, parseLayer, resolveConfig } from './config.ts'
+import { defaultsLayer } from './defaults.ts'
+import { type Effort, efforts, priorities } from './fields.ts'
+import { route } from './route.ts'
 
-const config: RouteConfig = {
-  engines: { default: 'claude', reviewer: 'codex' },
-  routing: {
-    matrix: {
-      L: { P0: 'deep', P1: 'deep', P2: 'deep', P3: 'deep' },
-      M: { P0: 'deep', P1: 'standard', P2: 'standard', P3: 'standard' },
-      S: { P0: 'standard', P1: 'fast', P2: 'fast', P3: 'fast' },
-      XL: { P0: 'split', P1: 'split', P2: 'split', P3: 'split' },
-      XS: { P0: 'fast', P1: 'fast', P2: 'fast', P3: 'fast' },
-    },
-    models: {
-      claude: {
-        deep: { effort: 'high', model: 'opus' },
-        fast: { effort: 'low', model: 'haiku' },
-        standard: { effort: 'medium', model: 'sonnet' },
-      },
-      codex: {
-        deep: { effort: 'high', model: 'gpt-6-astra' },
-        fast: { effort: 'low', model: 'gpt-6-luna' },
-        standard: { effort: 'medium', model: 'gpt-6.1-sol' },
-      },
-      gemini: {
-        deep: { effort: 'high', model: 'gemini-4-argon' },
-        fast: { effort: 'low', model: 'gemini-3.6-flash' },
-        standard: { effort: 'medium', model: 'gemini-4-argon' },
-      },
-    },
-    roles: { architect: 'deep', reviewer: 'deep', triage: 'fast' },
-  },
+const parse = (text: string, source: string): Layer => {
+  const result = parseLayer(text, source)
+  if (!result.ok) throw new Error(result.error)
+  return result.value
 }
 
-const expected: Record<string, Cell[]> = {
+const owner = parse(
+  'backend: user\nproject: { owner: guello, number: 1 }\nengines: { reviewer: codex }',
+  'owner'
+)
+const resolved = resolveConfig(defaultsLayer, owner)
+if (!resolved.ok) throw new Error(resolved.error)
+const { config } = resolved.value
+
+const expected: Record<Effort, Cell[]> = {
   L: ['deep', 'deep', 'deep', 'deep'],
   M: ['deep', 'standard', 'standard', 'standard'],
   S: ['standard', 'fast', 'fast', 'fast'],
@@ -46,7 +31,7 @@ const expected: Record<string, Cell[]> = {
 describe('route', () => {
   for (const effort of efforts) {
     for (const [index, priority] of priorities.entries()) {
-      const cell = expected[effort]?.[index]
+      const cell = expected[effort][index]
       it(`routes an implementer with ${effort} and ${priority} to ${cell}`, () => {
         const result = route({ effort, priority, role: 'implementer' }, config)
         if (cell === 'split') {
@@ -58,6 +43,20 @@ describe('route', () => {
       })
     }
   }
+
+  it('holds the models of the spec for each engine and tier', () => {
+    const column = (fast: string, standard: string, deep: string) => ({
+      deep: { effort: 'high', model: deep },
+      fast: { effort: 'low', model: fast },
+      standard: { effort: 'medium', model: standard },
+    })
+    assert.deepEqual(config.routing.models, {
+      claude: column('haiku', 'sonnet', 'opus'),
+      codex: column('gpt-6-luna', 'gpt-6.1-sol', 'gpt-6-astra'),
+      gemini: column('gemini-3.6-flash', 'gemini-4-argon', 'gemini-4-argon'),
+    })
+    assert.deepEqual(config.routing.roles, { architect: 'deep', reviewer: 'deep', triage: 'fast' })
+  })
 
   it('picks the model and the effort of the default engine', () => {
     assert.deepEqual(route({ effort: 'S', priority: 'P0', role: 'implementer' }, config), {
@@ -71,8 +70,14 @@ describe('route', () => {
   })
 
   it('holds an implementer without Effort or Priority for triage', () => {
-    assert.deepEqual(route({ priority: 'P1', role: 'implementer' }, config), { label: 'needs-triage', run: false })
-    assert.deepEqual(route({ effort: 'S', role: 'implementer' }, config), { label: 'needs-triage', run: false })
+    assert.deepEqual(route({ priority: 'P1', role: 'implementer' }, config), {
+      label: 'needs-triage',
+      run: false,
+    })
+    assert.deepEqual(route({ effort: 'S', role: 'implementer' }, config), {
+      label: 'needs-triage',
+      run: false,
+    })
   })
 
   it('routes the other roles by their fixed tier, with no fields', () => {

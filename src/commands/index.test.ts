@@ -23,14 +23,14 @@ describe('run', () => {
       const { code, stderr, stdout } = capture([flag])
       assert.equal(code, 0)
       assert.equal(stderr, '')
-      assert.match(stdout, /^Usage: agentic-github/)
+      assert.match(stdout, /^Usage: agentic-repo/)
     }
   })
 
   it('prints the help for a bare run', () => {
     const { code, stdout } = capture([])
     assert.equal(code, 0)
-    assert.match(stdout, /^Usage: agentic-github/)
+    assert.match(stdout, /^Usage: agentic-repo/)
   })
 
   it('prints the package version for --version and -v', () => {

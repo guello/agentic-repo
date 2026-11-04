@@ -1,21 +1,19 @@
-# agentic-github
+# Agentic Repo
 
-Run software work through GitHub issues and pull requests, with any coding agent, local or in CI.
-
-GitHub does not make or endorse this project. GitHub is a trademark of GitHub, Inc.
+Automate the issue and pull request lifecycle with any coding agent, locally or in CI.
 
 ## Development
 
-The CLI runs on Node.js 22 or later. The build needs Node.js 22.18, 24.11 or 26, and pnpm through Corepack.
+The CLI runs on Node.js 22 or later. The build needs Node.js >=22 and pnpm through Corepack.
 
 ```sh
 pnpm install
-pnpm run check   # format, lint and types
+pnpm check    # format, lint, types
 pnpm test
-pnpm run build   # writes dist/agentic-github.mjs
+pnpm build    # writes dist/agentic-repo.mjs
 ```
 
-Commit `dist/agentic-github.mjs` with each change to `src/`, because CI runs the committed bundle.
+Git ignores `dist/`. The release job builds the bundle and commits it only on the release tag, because CI runs the bundle of its tag.
 
 ## License
 

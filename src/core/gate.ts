@@ -30,7 +30,8 @@ export type StartBlock =
   | { code: 'pull-request'; pullRequests: number[] }
   | { code: 'xl' }
 
-const openNumbers = (refs: IssueRef[]): number[] => refs.filter(ref => ref.open).map(ref => ref.number)
+const openNumbers = (refs: IssueRef[]): number[] =>
+  refs.filter(ref => ref.open).map(ref => ref.number)
 
 export const startGate = (issue: IssueSnapshot): StartBlock[] => {
   const blocks: StartBlock[] = []
@@ -41,7 +42,9 @@ export const startGate = (issue: IssueSnapshot): StartBlock[] => {
   if (blockers.length > 0) blocks.push({ code: 'blocked', issues: blockers })
   const children = openNumbers(issue.subIssues)
   if (children.length > 0) blocks.push({ code: 'container', issues: children })
-  if (issue.linkedBranches.length > 0) blocks.push({ code: 'branch', branches: issue.linkedBranches })
+  if (issue.linkedBranches.length > 0) {
+    blocks.push({ code: 'branch', branches: issue.linkedBranches })
+  }
   const pullRequests = openNumbers(issue.closingPullRequests)
   if (pullRequests.length > 0) blocks.push({ code: 'pull-request', pullRequests })
   const missing = (['effort', 'priority'] as const).filter(field => issue[field] === undefined)
@@ -78,11 +81,15 @@ const pullRequestHolds = [labels.needsReview, labels.doNotMerge]
 
 export const mergeGate = (pullRequest: PullRequestSnapshot): MergeBlock[] => {
   const blocks: MergeBlock[] = []
-  const holds = pullRequest.labels.filter(name => pullRequestHolds.some(hold => sameLabel(name, hold)))
+  const holds = pullRequest.labels.filter(name =>
+    pullRequestHolds.some(hold => sameLabel(name, hold))
+  )
   if (holds.length > 0) blocks.push({ code: 'pull-request-label', labels: holds })
   for (const issue of pullRequest.closes) {
     const issueHolds = issue.labels.filter(isHoldLabel)
-    if (issueHolds.length > 0) blocks.push({ code: 'issue-label', issue: issue.number, labels: issueHolds })
+    if (issueHolds.length > 0) {
+      blocks.push({ code: 'issue-label', issue: issue.number, labels: issueHolds })
+    }
     const blockers = openNumbers(issue.blockedBy)
     if (blockers.length > 0) blocks.push({ blockers, code: 'issue-blocked', issue: issue.number })
   }
@@ -91,7 +98,10 @@ export const mergeGate = (pullRequest: PullRequestSnapshot): MergeBlock[] => {
 
 const refs = (numbers: number[]): string => numbers.map(number => `#${number}`).join(', ')
 const codes = (names: string[]): string => names.map(name => `\`${name}\``).join(', ')
-const fieldNames = { effort: 'Effort', priority: 'Priority' } as const satisfies Record<Field, string>
+const fieldNames = { effort: 'Effort', priority: 'Priority' } as const satisfies Record<
+  Field,
+  string
+>
 
 export const describeStartBlock = (block: StartBlock): string => {
   switch (block.code) {
