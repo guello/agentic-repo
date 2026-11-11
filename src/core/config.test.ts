@@ -3,7 +3,6 @@ import { readFile } from 'node:fs/promises'
 import { describe, it } from 'node:test'
 
 import {
-  type Layer,
   type Resolved,
   type Result,
   configJsonSchema,
@@ -14,25 +13,27 @@ import {
 } from './config.ts'
 import { defaultsLayer } from './defaults.ts'
 
-const read = (path: string): Promise<string> => readFile(new URL(path, import.meta.url), 'utf8')
+const owner = layer(
+  'backend: user\nproject: { owner: guello, number: 1 }\nengines: { reviewer: codex }\n',
+  'guello/.github',
+)
 
-const layer = (text: string, source: string): Layer => {
+function read(path: string) {
+  return readFile(new URL(path, import.meta.url), 'utf8')
+}
+
+function layer(text: string, source: string) {
   const result = parseLayer(text, source)
   if (!result.ok) throw new Error(result.error)
   return result.value
 }
 
-const unwrap = <T>(result: Result<T>): T => {
+function unwrap<T>(result: Result<T>) {
   if (!result.ok) throw new Error(result.error)
   return result.value
 }
 
-const owner = layer(
-  'backend: user\nproject: { owner: guello, number: 1 }\nengines: { reviewer: codex }\n',
-  'guello/.github'
-)
-
-const errorOf = (result: Result<unknown>): string => {
+function errorOf(result: Result<unknown>) {
   assert.equal(result.ok, false)
   return result.ok ? '' : result.error
 }
@@ -80,7 +81,7 @@ describe('merge', () => {
         a: { b: 1, c: 3 },
         d: [3],
         e: 'y',
-      }
+      },
     )
   })
 })
@@ -98,7 +99,7 @@ describe('resolveConfig', () => {
   it('changes only the keys of the repo file', () => {
     const repo = layer(
       'engines: { default: codex }\nrouting: { matrix: { M: { P0: standard } } }',
-      'guello/app'
+      'guello/app',
     )
     const { config, sources }: Resolved = unwrap(resolveConfig(defaultsLayer, owner, repo))
     assert.deepEqual(config.engines, { default: 'codex', reviewer: 'codex' })
@@ -112,11 +113,11 @@ describe('resolveConfig', () => {
   it('takes each value from the last file that sets it', () => {
     const team = layer(
       'backend: org\nproject: { owner: squonk, number: 2 }\nengines: { default: codex }\nfields: { effort: { options: { XS: Tiny } } }',
-      'squonk/.github'
+      'squonk/.github',
     )
     const repo = layer(
       'engines: { default: gemini }\nfields: { effort: { options: { XL: Huge } } }',
-      'squonk/app'
+      'squonk/app',
     )
     const { config, sources } = unwrap(resolveConfig(defaultsLayer, team, repo))
     assert.equal(config.engines.default, 'gemini')
@@ -130,25 +131,25 @@ describe('resolveConfig', () => {
     const repo = layer('fields: { effort: { options: {} } }', 'guello/app')
     assert.equal(
       unwrap(resolveConfig(defaultsLayer, owner, repo)).sources.get('fields.effort.options'),
-      'guello/app'
+      'guello/app',
     )
   })
 
   it('rejects root in the owner file', () => {
     const rooted = layer(
       'root: true\nbackend: user\nproject: { owner: guello, number: 1 }',
-      'guello/.github'
+      'guello/.github',
     )
     assert.match(
       errorOf(resolveConfig(defaultsLayer, rooted)),
-      /guello\/\.github: root applies only to a repo file/
+      /guello\/\.github: root applies only to a repo file/,
     )
   })
 
   it('skips the owner file when the repo file has root: true', () => {
     const repo = layer(
       'root: true\nbackend: org\nproject: { owner: squonk, number: 2 }',
-      'squonk/app'
+      'squonk/app',
     )
     const { config, sources } = unwrap(resolveConfig(defaultsLayer, owner, repo))
     assert.deepEqual(config.engines, { default: 'claude' })
@@ -177,9 +178,9 @@ describe('fieldSource', () => {
     assert.equal(
       fieldSource(
         { ...org, fields: { ...org.fields, effort: { name: 'Size', source: 'project' } } },
-        'effort'
+        'effort',
       ),
-      'project'
+      'project',
     )
   })
 })

@@ -25,7 +25,9 @@ const ready: IssueSnapshot = {
   subIssues: [{ number: 43, open: false }],
 }
 
-const codesOf = (blocks: { code: string }[]): string[] => blocks.map(block => block.code)
+function codesOf(blocks: { code: string }[]) {
+  return blocks.map(block => block.code)
+}
 
 describe('startGate', () => {
   it('passes a ready issue: closed blockers, sub-issues and PRs do not count', () => {
@@ -87,7 +89,7 @@ describe('startGate', () => {
     assert.equal(describeStartBlock({ code: 'blocked', issues: [5, 6] }), 'Open blockers: #5, #6.')
     assert.equal(
       describeStartBlock({ code: 'fields', missing: ['effort', 'priority'] }),
-      'The issue has no value for: Effort, Priority.'
+      'The issue has no value for: Effort, Priority.',
     )
   })
 })
@@ -185,7 +187,7 @@ describe('mergeGate', () => {
     }
     assert.equal(
       describeMergeBlock({ blockers: [5], code: 'issue-blocked', issue: 12 }),
-      '#12 has open blockers: #5.'
+      '#12 has open blockers: #5.',
     )
   })
 })

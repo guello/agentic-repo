@@ -20,8 +20,9 @@ const typeMap = new Map<string, CommitType>([
   ['task', 'chore'],
 ])
 
-export const commitTypeFor = (issueType: string | undefined): CommitType | undefined =>
-  issueType === undefined ? undefined : typeMap.get(issueType.toLowerCase())
+export function commitTypeFor(issueType: string | undefined): CommitType | undefined {
+  return issueType === undefined ? undefined : typeMap.get(issueType.toLowerCase())
+}
 
 export const maxSlugLength = 40
 
@@ -37,7 +38,7 @@ const letters: Record<string, string> = {
   þ: 'th',
 }
 
-export const slug = (title: string): string => {
+export function slug(title: string) {
   const full = title
     .normalize('NFKD')
     .replaceAll(/\p{M}/gu, '')
@@ -58,7 +59,7 @@ export interface BranchInput {
   type: CommitType
 }
 
-export const branchName = ({ ci, issue, title, type }: BranchInput): string => {
+export function branchName({ ci, issue, title, type }: BranchInput) {
   const words = slug(title)
   const name = `${type}/${issue}${words ? `-${words}` : ''}`
   return ci ? `agent/${name}` : name

@@ -3,29 +3,29 @@ import * as z from 'zod'
 
 import { efforts, issueTypes, priorities } from './fields.ts'
 
-export const engineNames = ['claude', 'codex', 'gemini'] as const
-export const tiers = ['deep', 'fast', 'standard'] as const
-export const cells = [...tiers, 'split'] as const
-export const modelEfforts = ['high', 'low', 'medium'] as const
-export const fixedRoles = ['architect', 'reviewer', 'triage'] as const
-export const fieldKeys = ['effort', 'priority', 'type'] as const
+export type Engine = (typeof ENGINES)[number]
+export type Tier = (typeof TIERS)[number]
+export type Cell = (typeof CELLS)[number]
+export type ModelEffort = (typeof MODEL_EFFORTS)[number]
+export type FixedRole = (typeof FIXED_ROLES)[number]
+export type FieldKey = (typeof FIXED_KEYS)[number]
 
-export type Engine = (typeof engineNames)[number]
-export type Tier = (typeof tiers)[number]
-export type Cell = (typeof cells)[number]
-export type ModelEffort = (typeof modelEfforts)[number]
-export type FixedRole = (typeof fixedRoles)[number]
-export type FieldKey = (typeof fieldKeys)[number]
+export const ENGINES = ['claude', 'codex', 'gemini'] as const
+export const TIERS = ['deep', 'fast', 'standard'] as const
+export const CELLS = [...TIERS, 'split'] as const
+export const MODEL_EFFORTS = ['high', 'low', 'medium'] as const
+export const FIXED_ROLES = ['architect', 'reviewer', 'triage'] as const
+export const FIXED_KEYS = ['effort', 'priority', 'type'] as const
 
-const engine = z.enum(engineNames)
-const tier = z.enum(tiers)
+const engine = z.enum(ENGINES)
+const tier = z.enum(TIERS)
 const count = z.int().min(1)
-const priorityCells = z.record(z.enum(priorities), z.enum(cells))
-const modelChoice = z.strictObject({ effort: z.enum(modelEfforts), model: z.string().min(1) })
+const priorityCells = z.record(z.enum(priorities), z.enum(CELLS))
+const modelChoice = z.strictObject({ effort: z.enum(MODEL_EFFORTS), model: z.string().min(1) })
 const tierModels = z.record(tier, modelChoice)
 
-const field = <Values extends readonly [string, ...string[]]>(values: Values) =>
-  z.strictObject({
+function field<Values extends readonly [string, ...string[]]>(values: Values) {
+  return z.strictObject({
     name: z
       .string()
       .min(1)
@@ -38,9 +38,10 @@ const field = <Values extends readonly [string, ...string[]]>(values: Values) =>
       .enum(['issue', 'project'])
       .optional()
       .describe(
-        'Where the value is. The default is issue for the org backend and project for the user backend.'
+        'Where the value is. The default is issue for the org backend and project for the user backend.',
       ),
   })
+}
 
 const routingSchema = z.strictObject({
   matrix: z
@@ -50,7 +51,7 @@ const routingSchema = z.strictObject({
     .record(engine, tierModels)
     .describe('The model and the effort of each engine and tier.'),
   roles: z
-    .record(z.enum(fixedRoles), tier)
+    .record(z.enum(FIXED_ROLES), tier)
     .describe('The tier of each role that does not use the matrix.'),
 })
 
@@ -59,7 +60,7 @@ export const configSchema = z
     backend: z
       .enum(['org', 'user'])
       .describe(
-        'org uses issue types and issue fields. user uses project fields on a personal account.'
+        'org uses issue types and issue fields. user uses project fields on a personal account.',
       ),
     engines: z.strictObject({
       default: engine.describe('The engine of each role.'),
@@ -77,7 +78,7 @@ export const configSchema = z
       .describe('The project that holds the Status field.'),
     reconcile: z.strictObject({
       remindAfterDays: count.describe(
-        'Days between two reminders on an issue that waits on the user.'
+        'Days between two reminders on an issue that waits on the user.',
       ),
     }),
     review: z.strictObject({
@@ -87,7 +88,7 @@ export const configSchema = z
   })
   .superRefine((config, context) => {
     if (config.backend !== 'user') return
-    for (const key of fieldKeys) {
+    for (const key of FIXED_KEYS) {
       if (config.fields[key].source !== 'issue') continue
       context.addIssue({
         code: 'custom',
@@ -104,14 +105,14 @@ type DeepPartial<T> = { [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]>
 
 export type LayerConfig = DeepPartial<Config> & { root?: boolean }
 
-const withMeta = (from: z.ZodType, to: z.ZodType): z.ZodType => {
+function withMeta(from: z.ZodType, to: z.ZodType) {
   const meta = from.meta()
   return meta ? to.meta(meta) : to
 }
 
 const leafTypes = new Set(['boolean', 'enum', 'number', 'string'])
 
-const partialOf = (schema: z.ZodType): z.ZodType => {
+function partialOf(schema: z.ZodType): z.ZodType {
   if (schema instanceof z.ZodOptional) {
     return withMeta(schema, partialOf(schema.unwrap() as z.ZodType))
   }
@@ -121,17 +122,18 @@ const partialOf = (schema: z.ZodType): z.ZodType => {
   if (schema instanceof z.ZodRecord) {
     return withMeta(
       schema,
-      z.partialRecord(schema.keyType, partialOf(schema.valueType as z.ZodType))
+      z.partialRecord(schema.keyType, partialOf(schema.valueType as z.ZodType)),
     )
   }
   if (leafTypes.has(schema.def.type)) return schema
   throw new Error(`The layer schema cannot make a partial ${schema.def.type} schema.`)
 }
 
-const partialShape = (shape: z.ZodRawShape): z.ZodRawShape =>
-  Object.fromEntries(
-    Object.entries(shape).map(([key, value]) => [key, partialOf(value as z.ZodType).optional()])
+function partialShape(shape: z.ZodRawShape) {
+  return Object.fromEntries(
+    Object.entries(shape).map(([key, value]) => [key, partialOf(value as z.ZodType).optional()]),
   )
+}
 
 export const layerSchema = z
   .strictObject({
@@ -144,8 +146,9 @@ export const layerSchema = z
     title: 'agentic-repo config',
   })
 
-export const configJsonSchema = (): Record<string, unknown> =>
-  z.toJSONSchema(layerSchema, { target: 'draft-07' })
+export function configJsonSchema() {
+  return z.toJSONSchema(layerSchema, { target: 'draft-07' })
+}
 
 export type Result<T> = { error: string; ok: false } | { ok: true; value: T }
 
@@ -154,11 +157,11 @@ export interface Layer {
   source: string
 }
 
-export const parseLayer = (text: string, source: string): Result<Layer> => {
+export function parseLayer(text: string, source: string) {
   let data: unknown
   try {
     data = parseYaml(text, { logLevel: 'error', prettyErrors: true })
-  } catch (error: unknown) {
+  } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     return { error: `${source}: ${message}`, ok: false }
   }
@@ -169,36 +172,39 @@ export const parseLayer = (text: string, source: string): Result<Layer> => {
 
 type Plain = Record<string, unknown>
 
-const isPlain = (value: unknown): value is Plain =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
+function isPlain(value: unknown): value is Plain {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
-export const merge = (base: unknown, layer: unknown): unknown => {
+export function merge(base: unknown, layer: unknown): unknown {
   if (layer === undefined) return base
   if (!isPlain(base) || !isPlain(layer)) return layer
   const keys = new Set([...Object.keys(base), ...Object.keys(layer)])
   return Object.fromEntries([...keys].map(key => [key, merge(base[key], layer[key])]))
 }
 
-const leaves = (value: unknown, path: string[] = []): string[][] =>
-  isPlain(value) && Object.keys(value).length > 0
+function leaves(value: unknown, path: string[] = []): string[][] {
+  return isPlain(value) && Object.keys(value).length > 0
     ? Object.entries(value).flatMap(([key, child]) => leaves(child, [...path, key]))
     : [path]
+}
 
-const valueAt = (value: unknown, path: string[]): unknown =>
-  path.reduce<unknown>((node, key) => (isPlain(node) ? node[key] : undefined), value)
+function valueAt(value: unknown, path: string[]) {
+  return path.reduce<unknown>((node, key) => (isPlain(node) ? node[key] : undefined), value)
+}
 
 export interface Resolved {
   config: Config
   sources: Map<string, string>
 }
 
-export const resolveConfig = (defaults: Layer, owner?: Layer, repo?: Layer): Result<Resolved> => {
+export function resolveConfig(defaults: Layer, owner?: Layer, repo?: Layer) {
   const misplaced = [defaults, owner].find(layer => layer?.data.root !== undefined)
   if (misplaced) {
     return { error: `${misplaced.source}: root applies only to a repo file.`, ok: false }
   }
   const layers = [defaults, repo?.data.root === true ? undefined : owner, repo].filter(
-    (layer): layer is Layer => layer !== undefined
+    (layer): layer is Layer => layer !== undefined,
   )
   const merged = layers.reduce<unknown>((result, layer) => {
     const { root, ...data } = layer.data
@@ -206,11 +212,12 @@ export const resolveConfig = (defaults: Layer, owner?: Layer, repo?: Layer): Res
   }, {})
   const parsed = configSchema.safeParse(merged)
   if (!parsed.success) return { error: z.prettifyError(parsed.error), ok: false }
-  const sourceOf = (path: string[]): string =>
+  const sourceOf = (path: string[]) =>
     layers.findLast(layer => valueAt(layer.data, path) !== undefined)?.source ?? defaults.source
   const sources = new Map(leaves(parsed.data).map(path => [path.join('.'), sourceOf(path)]))
   return { ok: true, value: { config: parsed.data, sources } }
 }
 
-export const fieldSource = (config: Config, key: FieldKey): 'issue' | 'project' =>
-  config.fields[key].source ?? (config.backend === 'org' ? 'issue' : 'project')
+export function fieldSource(config: Config, key: FieldKey) {
+  return config.fields[key].source ?? (config.backend === 'org' ? 'issue' : 'project')
+}

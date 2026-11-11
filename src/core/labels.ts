@@ -8,7 +8,10 @@ export const labels = {
   needsTriage: 'needs-triage',
 } as const
 
-export const sameLabel = (a: string, b: string): boolean => a.toLowerCase() === b.toLowerCase()
+export function sameLabel(a: string, b: string) {
+  return a.toLowerCase() === b.toLowerCase()
+}
 
-export const isHoldLabel = (name: string): boolean =>
-  name.toLowerCase().startsWith('needs-') || sameLabel(name, labels.agentFailed)
+export function isHoldLabel(name: string) {
+  return name.toLowerCase().startsWith('needs-') || sameLabel(name, labels.agentFailed)
+}

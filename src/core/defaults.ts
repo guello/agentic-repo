@@ -1,4 +1,4 @@
-import { type Config, type Layer } from './config.ts'
+import type { Config, Layer } from './config.ts'
 
 export const defaults = {
   engines: {

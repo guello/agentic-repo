@@ -42,14 +42,14 @@ describe('branchName', () => {
   it('names a local branch <type>/<issue>-<slug>', () => {
     assert.equal(
       branchName({ ci: false, issue: 42, title: 'Fix login', type: 'fix' }),
-      'fix/42-fix-login'
+      'fix/42-fix-login',
     )
   })
 
   it('adds agent/ in front for CI runs', () => {
     assert.equal(
       branchName({ ci: true, issue: 7, title: 'Add docs', type: 'docs' }),
-      'agent/docs/7-add-docs'
+      'agent/docs/7-add-docs',
     )
   })
 

@@ -1,18 +1,4 @@
 {
-  "include": ["src", "scripts", "*.config.ts"],
-  "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "erasableSyntaxOnly": true,
-    "forceConsistentCasingInFileNames": true,
-    "lib": ["es2023"],
-    "module": "nodenext",
-    "noEmit": true,
-    "noUncheckedIndexedAccess": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "es2023",
-    "types": ["node"],
-    "verbatimModuleSyntax": true
-  }
+  "extends": "@guello/tsconfig/node",
+  "include": ["src", "scripts", "*.config.ts"]
 }

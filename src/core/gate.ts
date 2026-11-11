@@ -1,4 +1,4 @@
-import { type Effort, type Priority } from './fields.ts'
+import type { Effort, Priority } from './fields.ts'
 import { isHoldLabel, labels, sameLabel } from './labels.ts'
 
 export interface IssueRef {
@@ -30,10 +30,11 @@ export type StartBlock =
   | { code: 'pull-request'; pullRequests: number[] }
   | { code: 'xl' }
 
-const openNumbers = (refs: IssueRef[]): number[] =>
-  refs.filter(ref => ref.open).map(ref => ref.number)
+function openNumbers(issueRefs: IssueRef[]) {
+  return issueRefs.filter(ref => ref.open).map(ref => ref.number)
+}
 
-export const startGate = (issue: IssueSnapshot): StartBlock[] => {
+export function startGate(issue: IssueSnapshot) {
   const blocks: StartBlock[] = []
   if (!issue.open) blocks.push({ code: 'closed' })
   const holds = issue.labels.filter(isHoldLabel)
@@ -53,11 +54,11 @@ export const startGate = (issue: IssueSnapshot): StartBlock[] => {
   return blocks
 }
 
-export const dispatchLabels = (blocks: StartBlock[]): string[] => {
-  const codes = new Set(blocks.map(block => block.code))
-  if (codes.has('container')) return []
-  if (codes.has('fields')) return [labels.needsTriage]
-  if (codes.has('xl')) return [labels.needsSpec]
+export function dispatchLabels(blocks: StartBlock[]) {
+  const blockCodes = new Set(blocks.map(block => block.code))
+  if (blockCodes.has('container')) return []
+  if (blockCodes.has('fields')) return [labels.needsTriage]
+  if (blockCodes.has('xl')) return [labels.needsSpec]
   return []
 }
 
@@ -79,10 +80,10 @@ export type MergeBlock =
 
 const pullRequestHolds = [labels.needsReview, labels.doNotMerge]
 
-export const mergeGate = (pullRequest: PullRequestSnapshot): MergeBlock[] => {
+export function mergeGate(pullRequest: PullRequestSnapshot) {
   const blocks: MergeBlock[] = []
   const holds = pullRequest.labels.filter(name =>
-    pullRequestHolds.some(hold => sameLabel(name, hold))
+    pullRequestHolds.some(hold => sameLabel(name, hold)),
   )
   if (holds.length > 0) blocks.push({ code: 'pull-request-label', labels: holds })
   for (const issue of pullRequest.closes) {
@@ -96,14 +97,19 @@ export const mergeGate = (pullRequest: PullRequestSnapshot): MergeBlock[] => {
   return blocks
 }
 
-const refs = (numbers: number[]): string => numbers.map(number => `#${number}`).join(', ')
-const codes = (names: string[]): string => names.map(name => `\`${name}\``).join(', ')
+function refs(numbers: number[]) {
+  return numbers.map(number => `#${number}`).join(', ')
+}
+
+function codes(names: string[]) {
+  return names.map(name => `\`${name}\``).join(', ')
+}
 const fieldNames = { effort: 'Effort', priority: 'Priority' } as const satisfies Record<
   Field,
   string
 >
 
-export const describeStartBlock = (block: StartBlock): string => {
+export function describeStartBlock(block: StartBlock) {
   switch (block.code) {
     case 'blocked': {
       return `Open blockers: ${refs(block.issues)}.`
@@ -136,7 +142,7 @@ export const describeStartBlock = (block: StartBlock): string => {
   }
 }
 
-export const describeMergeBlock = (block: MergeBlock): string => {
+export function describeMergeBlock(block: MergeBlock) {
   switch (block.code) {
     case 'issue-blocked': {
       return `#${block.issue} has open blockers: ${refs(block.blockers)}.`

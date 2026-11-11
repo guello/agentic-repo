@@ -4,7 +4,7 @@ import { describe, it } from 'node:test'
 import pkg from '../../package.json' with { type: 'json' }
 import { run } from './index.ts'
 
-const capture = (argv: string[]) => {
+function capture(argv: string[]) {
   const out = { code: 0, stderr: '', stdout: '' }
   out.code = run(argv, {
     stderr: text => {

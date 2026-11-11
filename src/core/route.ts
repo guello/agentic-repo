@@ -1,13 +1,5 @@
-import {
-  type Cell,
-  type Config,
-  type Engine,
-  type FixedRole,
-  type ModelEffort,
-  type Routing,
-  type Tier,
-} from './config.ts'
-import { type Effort, type Priority } from './fields.ts'
+import type { Cell, Config, Engine, FixedRole, ModelEffort, Routing, Tier } from './config.ts'
+import type { Effort, Priority } from './fields.ts'
 import { labels } from './labels.ts'
 
 export type Role = FixedRole | 'implementer'
@@ -24,13 +16,13 @@ export type RouteResult =
   | { effort: ModelEffort; engine: Engine; model: string; review: boolean; run: true; tier: Tier }
   | { label: typeof labels.needsSpec | typeof labels.needsTriage; run: false }
 
-const cellOf = (input: RouteInput, routing: Routing): Cell | undefined => {
+function cellOf(input: RouteInput, routing: Routing): Cell | undefined {
   if (input.role !== 'implementer') return routing.roles[input.role]
   if (input.effort === undefined || input.priority === undefined) return undefined
   return routing.matrix[input.effort][input.priority]
 }
 
-export const route = (input: RouteInput, { engines, routing }: RouteConfig): RouteResult => {
+export function route(input: RouteInput, { engines, routing }: RouteConfig) {
   const cell = cellOf(input, routing)
   if (cell === undefined) return { label: labels.needsTriage, run: false }
   if (cell === 'split') return { label: labels.needsSpec, run: false }

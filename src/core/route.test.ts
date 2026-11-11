@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
-import { type Cell, type Layer, parseLayer, resolveConfig } from './config.ts'
+import { type Cell, parseLayer, resolveConfig } from './config.ts'
 import { defaultsLayer } from './defaults.ts'
 import { type Effort, efforts, priorities } from './fields.ts'
 import { route } from './route.ts'
 
-const parse = (text: string, source: string): Layer => {
+function parse(text: string, source: string) {
   const result = parseLayer(text, source)
   if (!result.ok) throw new Error(result.error)
   return result.value
@@ -14,11 +14,11 @@ const parse = (text: string, source: string): Layer => {
 
 const owner = parse(
   'backend: user\nproject: { owner: guello, number: 1 }\nengines: { reviewer: codex }',
-  'owner'
+  'owner',
 )
 const resolved = resolveConfig(defaultsLayer, owner)
 if (!resolved.ok) throw new Error(resolved.error)
-const { config } = resolved.value
+const { config } = resolved.value!
 
 const expected: Record<Effort, Cell[]> = {
   L: ['deep', 'deep', 'deep', 'deep'],

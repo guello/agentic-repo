@@ -18,8 +18,8 @@ Options:
 
 const hint = 'Run "agentic-repo --help" for the usage.\n'
 
-const parse = (argv: string[]) =>
-  parseArgs({
+function parse(argv: string[]) {
+  return parseArgs({
     allowPositionals: true,
     args: argv,
     options: {
@@ -27,12 +27,13 @@ const parse = (argv: string[]) =>
       version: { short: 'v', type: 'boolean' },
     },
   })
+}
 
-export const run = (argv: string[], io: Io): number => {
+export function run(argv: string[], io: Io) {
   let parsed: ReturnType<typeof parse>
   try {
     parsed = parse(argv)
-  } catch (error: unknown) {
+  } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     io.stderr(`${message}\n${hint}`)
     return 1

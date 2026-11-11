@@ -1,6 +1,6 @@
 # Agentic Repo
 
-Automate the issue and pull request lifecycle with any coding agent, locally or in CI.
+Automate the development lifecycle of a repository using any coding agent, locally or in CI.
 
 ## Development
 
@@ -8,12 +8,12 @@ The CLI runs on Node.js 22 or later. The build needs Node.js >=22 and pnpm throu
 
 ```sh
 pnpm install
-pnpm check    # format, lint, types
+pnpm check     # format, lint, types
 pnpm test
-pnpm build    # writes dist/agentic-repo.mjs
+pnpm build     # writes dist/agentic-repo.mjs
 ```
 
-Git ignores `dist/`. The release job builds the bundle and commits it only on the release tag, because CI runs the bundle of its tag.
+Git ignores `dist/`. The release job builds and commits the bundle only on release.
 
 ## License
 
